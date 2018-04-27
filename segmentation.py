@@ -6,6 +6,7 @@ from skimage.feature import peak_local_max
 from scipy import ndimage
 import classifyim
 from skimage.filters import threshold_local
+from skimage.measure import regionprops
 
 
 def clipping(im, val):
@@ -223,7 +224,7 @@ def segment_image(img, params=None):
     if params is None:
         params = {
                 'clip_limit': 0.13,  # 0-1
-                'background_blur': 150,  # ??
+                'background_blur': 100,  # ??
                 'image_blur': 1.2,  # gaussian kernel
                 'block_size': 11,  # 2n-1 (1-inf)
                 'threshold': 0.1,  # for binarization of thresholded image
@@ -259,14 +260,7 @@ def segment_image(img, params=None):
             if val > 0:
                 im[im == val] = 0
 
-    plt.imshow(im)
-    plt.show()
     return im
 
 
-import matplotlib.pyplot as plt
-from PIL import Image
 
-img = Image.open('test_cell_db.tif')
-segged = segment_image(img)
-print(np.max(segged))

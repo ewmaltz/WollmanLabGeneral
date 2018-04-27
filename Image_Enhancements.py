@@ -6,6 +6,8 @@ from scipy.ndimage.filters import gaussian_filter as gf
 
 def auto_bright_nonlin(img, epochs, transform_factor=0.5, sigma=0.8, mean_thresh=2, mean_reduction=0.9):
     """
+    TODO: Transform multiple images simultaneously (e.g. Before and After) per Roy's request
+
     Try sliding window approach and maximize entropy for each window. Windows can't be too small, or too large.
     :param img: numpy array/obj of the image you want to transform
     :param epochs: hyperparameter for number of transformations

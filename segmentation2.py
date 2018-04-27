@@ -7,6 +7,7 @@ from skimage.feature import peak_local_max
 from scipy import ndimage
 import classifyim
 from skimage.filters import threshold_local, sobel, gaussian
+from skimage.morphology import convex_hull_image
 
 
 def segment_image(img, params=None):
@@ -22,7 +23,7 @@ def segment_image(img, params=None):
                 'background_blur': 130,  # ??
                 'image_blur': 1.5,  # gaussian kernel
                 'block_size': 101,  # 2n-1 (1-inf)
-                'threshold': 0.25,  # for binarization
+                'thresh': 0.01,  # for binarization
                 'smallest_object': 60,  # pixels
                 'dist_intensity_ratio': 0.75,  # 0-1 weight
                 'separation_distance': 8,  # pixels
@@ -32,6 +33,20 @@ def segment_image(img, params=None):
 
     img_arr = np.array(img).astype(np.float)  # convert to numpy array
     img_norm = img_arr/np.max(img_arr)  # normalized img (0-1)
+    img_pad = np.pad(img_norm, [1, 1], 'constant')  # pads edge with 0s
+    imgSmooth = gaussian(img_pad, sigma=params['cell_size_est'])  # gaussian filter
+
+    # Threshold
+    img_hmax = h_maxima(imgSmooth, params['thresh'])
+    img_hmax[np.where(img_hmax) == 1] = params['thresh']  # replace maxima with thresh value
+    local_max_ixs = peak_local_max(img_hmax)
+    RegionMax = img_hmax.copy()
+    RegionMax[local_max_ixs[:, 0], local_max_ixs[:, 1]] = 1  # replace local maxima with 1s
+    # RegionMax = filters.median(RegionMax)  # despeckle/clean array
+    I = imgSmooth.copy()
+    I[RegionMax] = 1  # set the ceiling to 1
+    imgBW =
+
 
     # Generate Threshold
     # img_blur = threshold_local(img_arr, params['block_size'])  # functionally blurs image
@@ -43,7 +58,6 @@ def segment_image(img, params=None):
 
     # plt.imshow(img_desp)
     # plt.show()
-    # img_gauss = gaussian(img_arr, sigma=params['cell_size_est'])  # smoothen
 
 img = Image.open('test_cell_db.tif')
 segged = segment_image(img)
