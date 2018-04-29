@@ -4,20 +4,20 @@ from segmentation import segment_image
 import cv2
 
 
-def get_nuc_cyto_ratios(imgs, cyto_size, params):
+def get_nuc_cyto_ratios(db_imgs, marker_imgs, cyto_size, params):
     """
     Take nuclear-stained images, calculate the region props to find each cell nucleus,
     then dilate around each nucleus to find the cytoplasmic area. Map this back onto the
     original image and record the ratio of the average intensities of each area.
-    :param imgs:
+    :param db_images: DeepBlue images for segmentation etc.
     :param cyto_size:
     :param params: dict for segmentation params
     :return:
     """
     nuc_cyto_ratios = []
-    for i in range(len(imgs)):
-        print(i, 'out of ', len(imgs))
-        seg_img = segment_image(imgs[i], params)
+    for i in range(len(db_imgs)):
+        print(i, 'out of ', len(db_imgs))
+        seg_img = segment_image(db_imgs[i], params)
         regions = regionprops(seg_img)
         for region in regions:
             # create blank matrix to hold each nuclear region in the image
@@ -29,8 +29,8 @@ def get_nuc_cyto_ratios(imgs, cyto_size, params):
             cyto = cv2.dilate(nuc, kernel, iterations=cyto_size)
 
             # get ratios
-            avg_cyto = np.mean(imgs[i][cyto])
-            avg_nuc = np.mean(imgs[i][nuc])
+            avg_cyto = np.mean(marker_imgs[i][cyto])
+            avg_nuc = np.mean(marker_imgs[i][nuc])
             nuc_cyto_ratios.append(avg_nuc / avg_cyto)
 
     return nuc_cyto_ratios
@@ -62,4 +62,3 @@ def colorize_segmented_image(img, color_type):
         rgb_img[list(regions[i].coords.T)] = colors[i]  # won't use the 1st color
 
     return rgb_img.astype(np.int)
-
